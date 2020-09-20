@@ -1,15 +1,13 @@
 package com.github.cbuschka.git_watch.controller;
 
 import com.google.gson.reflect.TypeToken;
-import com.squareup.okhttp.OkHttpClient;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.apis.CustomObjectsApi;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.apis.CustomObjectsApi;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
 
 public class RepositoryWatchWatcher implements Runnable
 {
@@ -27,8 +25,8 @@ public class RepositoryWatchWatcher implements Runnable
 		try
 		{
 			ApiClient client = Config.defaultClient();
+			client.setReadTimeout(0);
 			OkHttpClient httpClient = client.getHttpClient();
-			httpClient.setReadTimeout(0, TimeUnit.SECONDS);
 			client.setHttpClient(httpClient);
 
 			CustomObjectsApi customObjectsApi = new CustomObjectsApi();
@@ -37,7 +35,7 @@ public class RepositoryWatchWatcher implements Runnable
 			try (Watch<Object> watch = Watch.createWatch(
 					client,
 					customObjectsApi.listNamespacedCustomObjectCall(
-							"gitwatch.cbuschka.github.io", "v1alpha1", "", "repositories", null, null, null, null, null, Boolean.TRUE, null, null),
+							"gitwatch.cbuschka.github.io", "v1alpha1", "", "repositories", null, null, null, null, null, null, null, Boolean.TRUE, null),
 					new TypeToken<Watch.Response<Object>>()
 					{
 					}.getType());)

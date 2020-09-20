@@ -1,7 +1,7 @@
 package com.github.cbuschka.git_watch.controller;
 
 
-import io.kubernetes.client.ApiException;
+import io.kubernetes.client.openapi.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

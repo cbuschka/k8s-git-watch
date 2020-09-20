@@ -1,15 +1,9 @@
 package com.github.cbuschka.git_watch.controller;
 
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.AppsV1Api;
-import io.kubernetes.client.apis.ExtensionsApi;
-import io.kubernetes.client.models.V1Deployment;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.util.Config;
+import okhttp3.OkHttpClient;
 import org.apache.commons.compress.utils.IOUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -21,11 +15,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class RepositoryWatcher implements Runnable
 {
@@ -41,8 +33,8 @@ public class RepositoryWatcher implements Runnable
 		this.repositoryRegistry = repositoryRegistry;
 
 		ApiClient client = Config.defaultClient();
+		client.setReadTimeout(0);
 		OkHttpClient httpClient = client.getHttpClient();
-		httpClient.setReadTimeout(0, TimeUnit.SECONDS);
 		client.setHttpClient(httpClient);
 		this.client = client;
 	}
