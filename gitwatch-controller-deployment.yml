@@ -1,0 +1,73 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gitwatch-service
+rules:
+  - apiGroups: [ "apps", "extensions", "gitwatch.cbuschka.github.io" ]
+    resources: [ "deployments", "repositories" ]
+    verbs: [ "get", "watch", "list", "update", "patch", "delete" ]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitwatch-service
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gitwatch-service
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gitwatch-service
+subjects:
+  - kind: ServiceAccount
+    name: gitwatch-service
+    namespace: default
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitwatch-ssh-key
+  namespace: default
+type: Opaque
+#type: SecretTypeSSHAuth
+data:
+  ssh-privatekey: |
+    IyBrOHMgY29udHJvbGxlciB3cml0dGVuIGluIGphdmEgZm9yIHdhdGNoaW5nIGdpdCByZXBvcwoK
+    IyMjIGp1c3QgYW4gZXhwZXJpbWVudApjdXJsIC1MbyAuL2tpbmQgaHR0cHM6Ly9raW5kLnNpZ3Mu
+    azhzLmlvL2RsL3YwLjkuMC9raW5kLWxpbnV4LWFtZDY0CmNobW9kICt4IC4va2luZAptdiAuL2tp
+    bmQgL3NvbWUtZGlyLWluLXlvdXItUEFUSC9raW5kCi4va2luZCBjbHVzdGVyIGNyZWF0ZSAtLW5h
+    bWUga2luZApraW5kIGdldCBjbHVzdGVycwprdWJlY3RsIGNsdXN0ZXItaW5mbyAtLWNvbnRleHQg
+    a2luZC1raW5kCmtpbmQgZGVsZXRlIGNsdXN0ZXIgLS1uYW1lIGtpbmQta2luZApraW5kIGxvYWQg
+    ZG9ja2VyLWltYWdlIG15LWN1c3RvbS1pbWFnZTp1bmlxdWUtdGFnCmluZCBsb2FkIGltYWdlLWFy
+    Y2hpdmUgL215LWltYWdlLWFyY2hpdmUudGFyCgpraW5kIGNyZWF0ZSBjbHVzdGVyIC0tY29uZmln
+    IGtpbmQtZXhhbXBsZS1jb25maWcueWFtbApraW5kOiBDbHVzdGVyCmFwaVZlcnNpb246IGtpbmQu
+    eC1rOHMuaW8vdjFhbHBoYTQKbm9kZXM6Ci0gcm9sZTogY29udHJvbC1wbGFuZQogIGV4dHJhUG9y
+    dE1hcHBpbmdzOgogIC0gY29udGFpbmVyUG9ydDogODAKICAgIGhvc3RQb3J0OiA4MAogICAgbGlz
+    dGVuQWRkcmVzczogIjAuMC4wLjAiICMgT3B0aW9uYWwsIGRlZmF1bHRzIHRvICIwLjAuMC4wIgog
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gitwatch-controller
+  namespace: default
+spec:
+  serviceAccountName: gitwatch-service
+  containers:
+    - image: gitwatch-controller:latest
+      imagePullPolicy: IfNotPresent
+      name: gitwatch-controller
+#      volumeMounts:
+#        - name: app-secrets
+#          mountPath: /etc/gitwatch/
+#          readOnly: true
+  restartPolicy: Always
+#  volumes:
+#    - name: app-secrets
+#      secret:
+#        secretName: gitwatch-ssh-key
+#        items:
+#          - key: gitwatch-ssh-key
+#            path: gitwatch.id_rsa
