@@ -48,6 +48,7 @@ public class RepositoryWatchWatcher implements Runnable
 					String namespace = kObject.get("metadata").getString("namespace");
 					String url = kObject.get("spec").getString("url");
 					log.info("Seen kind={} name={} namespace={} url={}", kind, name, namespace, url);
+					repositoryRegistry.add(new Repository(name, url, "master"));
 				});
 			}
 		}

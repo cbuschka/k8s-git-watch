@@ -2,6 +2,6 @@ apiVersion: gitwatch.cbuschka.github.io/v1alpha1
 kind: Repository
 metadata:
   namespace: default
-  name: first-repo
+  name: testrepo
 spec:
-  url: bla
+  url: https://github.com/cbuschka/testrepo.git

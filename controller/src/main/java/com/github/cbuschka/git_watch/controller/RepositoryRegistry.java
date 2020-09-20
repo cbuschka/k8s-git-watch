@@ -7,10 +7,6 @@ public class RepositoryRegistry
 {
 	private Set<Repository> repositories = new HashSet<>();
 
-	{
-		repositories.add(new Repository("testrepo", "https://github.com/cbuschka/testrepo.git", "master"));
-	}
-
 	public synchronized void add(Repository repository)
 	{
 		repositories.add(repository);
