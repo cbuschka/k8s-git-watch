@@ -122,29 +122,34 @@ public class RepositoryWatcher implements Runnable
 
 	private void deploy(File ymlFile, Map<String, Object> data, byte[] bytes) throws ApiException
 	{
-		String namespace = (String) data.get("namespace");
-		if (namespace == null)
-		{
-			namespace = "default";
-		}
+		String namespace = (String) data.getOrDefault("namespace", "default");
 		Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
 		String name = (String) metadata.get("name");
 
 		AppsV1Api api = new AppsV1Api(this.client);
 
-		List<V1Deployment> deployments = api.listDeploymentForAllNamespaces(Boolean.FALSE, null, String.format("metadata.name=%s", name), null, null, null, null, null, Boolean.FALSE).getItems();
-		if (!deployments.isEmpty())
+		String json = this.client.getJSON().serialize(data);
+		V1Deployment newDeployment = this.client.getJSON().deserialize(json, V1Deployment.class);
+
+		List<V1Deployment> deployments;
+		if (namespace == null)
 		{
-			log.error("Deployment name={} already exists. Patch not supported.", name);
+			deployments = api.listDeploymentForAllNamespaces(Boolean.FALSE, null, String.format("metadata.name=%s", name), null, null, null, null, null, Boolean.FALSE).getItems();
 		}
 		else
 		{
-			log.info("Deploying {}...", name);
-			String json = this.client.getJSON().serialize(data);
-			V1Deployment deployment =
-					this.client.getJSON().deserialize(json, V1Deployment.class);
-			api.createNamespacedDeployment(namespace, deployment, null, null, null);
+			deployments = api.listNamespacedDeployment(namespace, null, Boolean.FALSE, null, String.format("metadata.name=%s", name), null, null, null, null, Boolean.FALSE).getItems();
+		}
 
+		if (deployments.isEmpty())
+		{
+			log.info("Deploying namespace={}, name={}...", namespace, name);
+			api.createNamespacedDeployment(namespace, newDeployment, null, null, null);
+		}
+		else
+		{
+			log.info("Replacing namespace={}, name={}...", namespace, name);
+			api.replaceNamespacedDeployment(name, namespace, newDeployment, null, null, null);
 		}
 	}
 
