@@ -4,7 +4,7 @@ metadata:
   name: gitwatch-service
 rules:
   - apiGroups: [ "gitwatch.cbuschka.github.io" ]
-    resources: [ "repositories" ]
+    resources: [ "deployments", "repositories" ]
     verbs: [ "get", "watch", "list" ]
 ---
 apiVersion: v1

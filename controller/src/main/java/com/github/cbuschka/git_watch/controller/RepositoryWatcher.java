@@ -2,6 +2,8 @@ package com.github.cbuschka.git_watch.controller;
 
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.AppsV1Api;
+import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.util.Config;
 import okhttp3.OkHttpClient;
 import org.apache.commons.compress.utils.IOUtils;
@@ -16,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -127,51 +130,22 @@ public class RepositoryWatcher implements Runnable
 		Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
 		String name = (String) metadata.get("name");
 
-		/*
-		String json = this.client.getJSON().serialize(data);
-		V1Deployment deployment =
-				this.client
-						.getJSON()
-						.deserialize(json, V1Deployment.class);
-
 		AppsV1Api api = new AppsV1Api(this.client);
-		deployment = api.createNamespacedDeployment(namespace, deployment, null, null, null);
 
+		List<V1Deployment> deployments = api.listDeploymentForAllNamespaces(Boolean.FALSE, null, String.format("metadata.name=%s", name), null, null, null, null, null, Boolean.FALSE).getItems();
+		if (!deployments.isEmpty())
+		{
+			log.error("Deployment name={} already exists. Patch not supported.", name);
+		}
+		else
+		{
+			log.info("Deploying {}...", name);
+			String json = this.client.getJSON().serialize(data);
+			V1Deployment deployment =
+					this.client.getJSON().deserialize(json, V1Deployment.class);
+			api.createNamespacedDeployment(namespace, deployment, null, null, null);
 
-
-		V1Deployment deploy2 =
-				PatchUtils.patch(
-						V1Deployment.class,
-						() ->
-								api.patchNamespacedDeploymentCall(
-										"hello-node",
-										"default",
-										new V1Patch(jsonPatchStr),
-										null,
-										null,
-										null, // field-manager is optional
-										null,
-										null),
-						V1Patch.PATCH_FORMAT_JSON_PATCH,
-						api.getApiClient());
-		System.out.println("json-patched deployment" + deploy2);
-
-		this.client.
-
-
-
-		api.
-				V1Deployment v1Deployment = new V1Deployment();
-		new ExtensionsApi(this.client)
-				.
-
-		this.client.getHttpClient()
-				.newCall(new Request.Builder()
-						.url()
-						.post(RequestBody.create(MediaType.parse("application/json"), bytes))
-						.build());
-		 */
-
+		}
 	}
 
 	private Set<File> collectYmlFiles(File repoDir)
