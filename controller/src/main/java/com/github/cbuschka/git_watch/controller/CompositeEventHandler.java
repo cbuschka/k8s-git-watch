@@ -1,4 +1,4 @@
-package com.github.cbuschka.mykubewatch;
+package com.github.cbuschka.git_watch.controller;
 
 import java.util.ArrayList;
 import java.util.List;

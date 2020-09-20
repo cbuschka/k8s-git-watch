@@ -1,5 +1,5 @@
-FROM openjdk:8-slim-stretch
+FROM openjdk:8-slim-buster
 
-COPY /mykubewatch-jar-with-dependencies.jar /
+COPY /k8s-git-watch-controller-jar-with-dependencies.jar /
 
-CMD [ "java", "-jar", "/mykubewatch-jar-with-dependencies.jar" ]
+CMD [ "java", "-jar", "/k8s-git-watch-controller-jar-with-dependencies.jar" ]

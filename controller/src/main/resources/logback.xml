@@ -6,8 +6,10 @@
         </encoder>
     </appender>
 
+    <logger name="io" level="WARN"/>
     <logger name="org" level="WARN"/>
     <logger name="com" level="WARN"/>
+    <logger name="com.github.cbuschka.git_watch" level="INFO"/>
     <root level="debug">
         <appender-ref ref="CONSOLE"/>
     </root>

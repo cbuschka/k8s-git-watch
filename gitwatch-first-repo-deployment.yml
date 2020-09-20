@@ -1,0 +1,7 @@
+apiVersion: gitwatch.cbuschka.github.io/v1alpha1
+kind: Repository
+metadata:
+  namespace: default
+  name: first-repo
+spec:
+  url: bla
