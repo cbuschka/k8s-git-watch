@@ -12,12 +12,13 @@ public class Controller
 	public void run() throws InterruptedException, IOException
 	{
 		RepositoryRegistry repositoryRegistry = new RepositoryRegistry();
+		DeploymentStateMap deploymentStateMap = new DeploymentStateMap();
 
 		RepositoryWatchWatcher watcher = new RepositoryWatchWatcher(repositoryRegistry);
 		Thread repoWatchWatcher = new Thread(watcher, "RepoWatchWatcher");
 		repoWatchWatcher.start();
 
-		RepositoryWatcher repositoryWatcher = new RepositoryWatcher(repositoryRegistry);
+		RepositoryWatcher repositoryWatcher = new RepositoryWatcher(repositoryRegistry, deploymentStateMap);
 		Thread repoWatcher = new Thread(repositoryWatcher, "RepoWatcher");
 		repoWatcher.start();
 

@@ -17,6 +17,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +31,14 @@ public class RepositoryWatcher implements Runnable
 	private final ApiClient client;
 
 	private RepositoryRegistry repositoryRegistry;
+	private DeploymentStateMap deploymentStateMap;
 
 	private File baseDir = new File("/tmp/workspaces/");
 
-	public RepositoryWatcher(RepositoryRegistry repositoryRegistry) throws IOException
+	public RepositoryWatcher(RepositoryRegistry repositoryRegistry, DeploymentStateMap deploymentStateMap) throws IOException
 	{
 		this.repositoryRegistry = repositoryRegistry;
+		this.deploymentStateMap = deploymentStateMap;
 
 		ApiClient client = Config.defaultClient();
 		client.setReadTimeout(0);
@@ -83,12 +88,21 @@ public class RepositoryWatcher implements Runnable
 					for (File ymlFile : ymlFiles)
 					{
 						byte[] bytes = IOUtils.toByteArray(new FileInputStream(ymlFile));
-						Yaml yaml = new Yaml();
-						Map<String, Object> data = (Map) yaml.load(new ByteArrayInputStream(bytes));
-						if ("Deployment".equals(data.get("kind")))
+						BigInteger hashCode = hashCode(bytes);
+						if (deploymentStateMap.isUptodate(ymlFile.getCanonicalPath(), hashCode))
 						{
-							log.info("Good:  {} is a deployment.", ymlFile);
-							deploy(ymlFile, data, bytes);
+							log.info("{} is uptodate.", ymlFile.getCanonicalPath());
+						}
+						else
+						{
+							Yaml yaml = new Yaml();
+							Map<String, Object> data = (Map) yaml.load(new ByteArrayInputStream(bytes));
+							if ("Deployment".equals(data.get("kind")))
+							{
+								log.info("Good:  {} is a deployment.", ymlFile);
+								deploy(ymlFile, data, bytes);
+								deploymentStateMap.update(ymlFile.getCanonicalPath(), hashCode);
+							}
 						}
 					}
 
@@ -185,6 +199,20 @@ public class RepositoryWatcher implements Runnable
 					ymlFiles.add(file);
 				}
 			}
+		}
+	}
+
+	private BigInteger hashCode(byte[] bytes)
+	{
+
+		try
+		{
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			return new BigInteger(md5.digest(bytes));
+		}
+		catch (SecurityException | NoSuchAlgorithmException ex)
+		{
+			throw new RuntimeException(ex);
 		}
 	}
 }
