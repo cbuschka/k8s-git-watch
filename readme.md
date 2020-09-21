@@ -1,4 +1,4 @@
-# k8s controller written in java for watching git repos
+# k8s operator that checks for yml file changes in git repos
 
 ### Just an Experiment
 
